@@ -145,13 +145,35 @@ docker push ${GKE_REGION}-docker.pkg.dev/${GKE_PROJECT_ID}/my-repository/hello-a
 
 Ahora que la imagen de Docker está almacenada en Artifact Registry
 
-#### Step 4.2) Automatizar con Cloud Build
+#### Step 4.2) Cloud Build - Compila una imagen con un Dockerfile 
 
-In Cloud Shell, create a Cloud Build build based on the latest commit with the following command:
+Cloud Build te permite compilar una imagen de Docker mediante un Dockerfile. No se necesita un archivo de configuración de Cloud Build diferente.
 
 ```bash
 COMMIT_ID="$(git rev-parse --short=7 HEAD)"
 gcloud builds submit --tag="${GKE_REGION}-docker.pkg.dev/${GKE_PROJECT_ID}/my-repository/hello-cloudbuild:${COMMIT_ID}" .
 ```
 
-After the build finishes, in the Cloud console go to Artifact Registry > Repositories to verify that your new container image is indeed available in Artifact Registry
+Acabas de compilar una imagen de Docker llamada hello-cloudbuild mediante un Dockerfile y enviaste la imagen a Artifact Registry.
+
+#### Step 4.3) Cloud Build - Compila una imagen mediante un archivo de configuración de compilación
+
+En esta sección, usarás un archivo de configuración de Cloud Build para compilar la misma imagen de Docker que la anterior. El archivo de configuración de compilación indica a Cloud Build que realice tareas según tus especificaciones.
+
+En el mismo directorio que contiene quickstart.sh y Dockerfile, crea un archivo llamado cloudbuild.yaml con el siguiente contenido. Este archivo es tu archivo de configuración de compilación. A la hora de la compilación, Cloud Build reemplaza de forma automática $PROJECT_ID por tu ID del proyecto.
+
+```bash
+steps:
+- name: 'gcr.io/cloud-builders/docker'
+  script: |
+    docker build -t us-west2-docker.pkg.dev/$PROJECT_ID/quickstart-docker-repo/quickstart-image:tag1 .
+  automapSubstitutions: true
+images:
+- 'us-west2-docker.pkg.dev/$PROJECT_ID/quickstart-docker-repo/quickstart-image:tag1'
+```
+
+Comienza la compilación mediante la ejecución del siguiente comando:
+
+```bash
+gcloud builds submit --region=us-west2 --config cloudbuild.yaml
+```
