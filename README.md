@@ -107,6 +107,51 @@ Here you can see our Gunicorn is running on port 5000 inside the container, and 
     kubectl get all --all-namespaces
     ```
 
-#### Step 3.1) Push flask image to GCP de form manual
+### Step 4) Crear un Repositorio
 
-#### Step 3.2) Automatizar con Cloud Build
+Crear un repositorio en Google Artifact Registry para almacenar las imagenes de los contenedores
+
+```bash
+gcloud artifacts repositories create my-repository \
+  --repository-format=docker \
+  --location=$GKE_REGION
+```
+
+#### Step 4.1) Push flask image to GCP de form manual
+
+Compila y etiqueta la imagen de Docker para hello-app:
+
+```bash
+docker build -t ${GKE_REGION}-docker.pkg.dev/${GKE_PROJECT_ID}/my-repository/hello-app:v1 .
+```
+
+Asegúrate de que la API de Artifact Registry esté habilitada para el proyecto de Google Cloud en el que estás trabajando:
+
+```bash
+gcloud services enable artifactregistry.googleapis.com
+```
+
+Configura la herramienta de línea de comandos de Docker para que se autentique en Artifact Registry:
+
+```bash
+gcloud auth configure-docker ${GKE_REGION}-docker.pkg.dev
+```
+
+Envía la imagen de Docker que acabas de compilar al repositorio:
+
+```bash
+docker push ${GKE_REGION}-docker.pkg.dev/${GKE_PROJECT_ID}/my-repository/hello-app:v1
+```
+
+Ahora que la imagen de Docker está almacenada en Artifact Registry
+
+#### Step 4.2) Automatizar con Cloud Build
+
+In Cloud Shell, create a Cloud Build build based on the latest commit with the following command:
+
+```bash
+COMMIT_ID="$(git rev-parse --short=7 HEAD)"
+gcloud builds submit --tag="${GKE_REGION}-docker.pkg.dev/${GKE_PROJECT_ID}/my-repository/hello-cloudbuild:${COMMIT_ID}" .
+```
+
+After the build finishes, in the Cloud console go to Artifact Registry > Repositories to verify that your new container image is indeed available in Artifact Registry
