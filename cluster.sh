@@ -1,0 +1,14 @@
+gcloud container clusters create $GKE_CLUSTER_NAME \
+  --project $GKE_PROJECT_ID \
+  --region $GKE_REGION \
+  --num-nodes 1 \
+  --service-account "$GKE_SA_EMAIL" \
+  --machine-type $GKE_MACHINE_TYPE \
+  --enable-ip-alias \
+  --enable-network-policy \
+  --enable-private-nodes \
+  --no-enable-master-authorized-networks \
+  --master-ipv4-cidr 172.16.0.32/28 \
+  --network $GKE_NETWORK_NAME \
+  --subnetwork $GKE_SUBNET_NAME \
+  --workload-pool "$GKE_PROJECT_ID.svc.id.goog"
