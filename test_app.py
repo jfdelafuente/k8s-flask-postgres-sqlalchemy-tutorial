@@ -18,7 +18,7 @@ from app import test
 class TestHelloApp(unittest.TestCase):
 
   def test_hello(self):
-    self.assertEqual(test(), "Hello World! I am from docker!\n")
+    self.assertEqual(test(), "Hello World! I am from docker!")
 
 if __name__ == '__main__':
   unittest.main()
