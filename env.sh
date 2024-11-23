@@ -1,5 +1,5 @@
 # variable
-export DEMO="demo"
+export DEMO="jf"
 
 # variable global 
 export GKE_PROJECT_ID="$DEMO-base-gke" 
@@ -23,7 +23,7 @@ export GKE_MACHINE_TYPE="e2-standard-2"
 export USE_GKE_GCLOUD_AUTH_PLUGIN="True" 
 export KUBECONFIG=~/.kube/gcp/$GKE_REGION-$GKE_CLUSTER_NAME.yaml
 
-export CLOUD_BILLING_ACCOUNT="<mi-cuenta-de-facturacion-en-la-nube>"
+export CLOUD_BILLING_ACCOUNT="0152B2-7E0055-F23A0D"
 
 echo $DEMO
 echo $GKE_PROJECT_ID
