@@ -8,4 +8,5 @@ gcloud beta billing projects link  $GKE_PROJECT_ID --billing-account $ClOUD_BILL
 gcloud config set project $GKE_PROJECT_ID
 gcloud services enable compute.googleapis.com
 gcloud services enable container.googleapis.com
+gcloud services enable cloudbuild.googleapis.com
 gcloud config set compute/region $GKE_REGION

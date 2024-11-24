@@ -28,7 +28,7 @@ steps:
     args:
       - "build"
       - "-t"
-      - "us-central1-docker.pkg.dev/jf-base-gke/my-repository/hello-flask-cloudbuild:$SHORT_SHA"
+      - "us-central1-docker.pkg.dev/$PROJECT_ID/my-repository/hello-flask-cloudbuild:$SHORT_SHA"
       - "."
 
   # This step pushes the image to Artifact Registry
@@ -38,7 +38,7 @@ steps:
     id: Push
     args:
       - "push"
-      - "us-central1-docker.pkg.dev/jf-base-gke/my-repository/hello-flask-cloudbuild:$SHORT_SHA"
+      - "us-central1-docker.pkg.dev/$PROJECT_ID/my-repository/hello-flask-cloudbuild:$SHORT_SHA"
 options:
   logging: CLOUD_LOGGING_ONLY
 # [END cloudbuild]

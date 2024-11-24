@@ -115,6 +115,8 @@ Crear un repositorio en Google Artifact Registry para almacenar las imagenes de 
 gcloud artifacts repositories create my-repository \
   --repository-format=docker \
   --location=$GKE_REGION
+
+gcloud services enable artifactregistry.googleapis.com
 ```
 
 #### Step 4.1) Push flask image to GCP de form manual
@@ -166,14 +168,14 @@ En el mismo directorio que contiene quickstart.sh y Dockerfile, crea un archivo 
 steps:
 - name: 'gcr.io/cloud-builders/docker'
   script: |
-    docker build -t us-west2-docker.pkg.dev/$PROJECT_ID/quickstart-docker-repo/quickstart-image:tag1 .
+    docker build -t us-west2-docker.pkg.dev/$PROJECT_ID/quickstart-docker-repo/quickstart-image:$SHORT_SHA .
   automapSubstitutions: true
 images:
-- 'us-west2-docker.pkg.dev/$PROJECT_ID/quickstart-docker-repo/quickstart-image:tag1'
+- 'us-central1-docker.pkg.dev/$PROJECT_ID/my-repository/app-image:$SHORT_SHA'
 ```
 
 Comienza la compilación mediante la ejecución del siguiente comando:
 
 ```bash
-gcloud builds submit --region=us-west2 --config cloudbuild.yaml
+gcloud builds submit --region=us-central1 --config cloudbuild.yaml
 ```
