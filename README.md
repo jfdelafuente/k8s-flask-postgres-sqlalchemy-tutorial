@@ -154,8 +154,6 @@ Existen varias alternativas:
 
  Google Kubernetes Engine ( GKE ) es fácil de configurar y poner en marcha. Con solo un comando o unos pocos clics del mouse, puede tener un clúster completo listo para usar.
 
-### a) Implementacion Rápida
-
   Creamos el cluster:
 
   ```bash
@@ -164,22 +162,27 @@ Existen varias alternativas:
 
   Una vez que se complete el comando, ejecuta el siguiente comando para ver los tres nodos del clúster:
   
-```bash
-kubectl get nodes
-```
+  ```bash
+  kubectl get nodes
+  ```
 
-Kubernetes representa las aplicaciones como Pods, que son unidades escalables que contienen uno o más contenedores. Una forma de implementar un conjunto de réplicas es mediante una implementación de Kubernetes.
+  Kubernetes representa las aplicaciones como Pods, que son unidades escalables que contienen uno o más contenedores. Una forma de implementar un conjunto de réplicas es mediante una implementación de Kubernetes.
 
   ```bash
   # Verifica que estás conectado a tu clúster de GKE
   gcloud container clusters get-credentials hello-cloudbuild --location us-central1
-```
+  ```
 
 ejecute el siguiente comando para imprimir el contexto activo:
 
 ```bash
 kubectl config current-context
 ```
+
+Tenemos varias opciones para desplegar nuestra aplicación en Kubernetes Google Cloud
+:
+
+### a) Implementacion Rápida
 
 Crea una implementación de Kubernetes:
 
@@ -197,63 +200,73 @@ kubectl expose deployment hello-app --name=hello-app-service --type=LoadBalancer
 kubectl get service
 ```
 
-### b) Implementacion Baseline
+### b) Implementacion por fichero
 
- El aprovisionamiento de GKE se realizará en el siguiente orden:
+Tenemos nuestra imagen en la nube, es hora de hacer un contenedor para nuestra aplicación flask.
+
+Para implementar nuestra flask-application desplegaremos todas las imágenes y servicios que se definen en el fichero YAML *deployment.yaml*
+
+```bash
+kubectl apply -f deployment.yaml
+```
+
+### c) Implementacion Baseline
+
+El aprovisionamiento de GKE se realizará en el siguiente orden:
 
 - Establecer las variables de entorno
 
-    ```bash
-    source env.sh
-    ```
+  ```bash
+  source env.sh
+  ```
 
 - Crear la cuenta de servicio de Google
 
-    Debemos crear una cuenta de servicio más segura que tenga los privilegios mínimos necesarios para ejecutar un clúster de GKE.
+  Debemos crear una cuenta de servicio más segura que tenga los privilegios mínimos necesarios para ejecutar un clúster de GKE.
 
-    ```bash
-    source privilegios.sh
-    ```
+  ```bash
+  source privilegios.sh
+  ```
 
 - Crear la subred privada
 
-    Al aprovisionar GKE , se utilizarán la VPC y la subred predeterminadas, lo que puede aumentar la superficie de ataque del clúster de GKE . Todo lo que se ejecute en la subred y posiblemente fuera de Internet público podrá acceder al clúster de GKE .
+  Al aprovisionar GKE , se utilizarán la VPC y la subred predeterminadas, lo que puede aumentar la superficie de ataque del clúster de GKE . Todo lo que se ejecute en la subred y posiblemente fuera de Internet público podrá acceder al clúster de GKE .
 
-    El primer paso para cambiar este comportamiento sería crear una nueva VPC y subred con enrutamiento saliente a Internet, de modo que el clúster pueda extraer imágenes de un registro de contenedores externo como Docker Hub o Quay.
+  El primer paso para cambiar este comportamiento sería crear una nueva VPC y subred con enrutamiento saliente a Internet, de modo que el clúster pueda extraer imágenes de un registro de contenedores externo como Docker Hub o Quay.
 
-    📓 NOTA : A continuación, se creará una infraestructura de red regional local adecuada para esta demostración. Para las organizaciones que puedan necesitar aprovisionar clústeres de GKE en varias regiones, deberá configurar una red VPC compartida . Los casos de uso de varios clústeres no se abordarán en este artículo.
+  📓 NOTA : A continuación, se creará una infraestructura de red regional local adecuada para esta demostración. Para las organizaciones que puedan necesitar aprovisionar clústeres de GKE en varias regiones, deberá configurar una red VPC compartida . Los casos de uso de varios clústeres no se abordarán en este artículo.
 
-    Lo siguiente creará una subred privada con un enrutador y NAT para el tráfico saliente, que es necesario para extraer una imagen de contenedor de Internet.
+  Lo siguiente creará una subred privada con un enrutador y NAT para el tráfico saliente, que es necesario para extraer una imagen de contenedor de Internet.
 
-    ```bash
-    source infraestructura.sh
-    ```
+  ```bash
+  source infraestructura.sh
+  ```
 
 - Cree el clúster de GKE utilizando la cuenta de servicio y la subred privada
 
-    Podemos crear un clúster de GKE que use una subred privada y Google Service Account(GSA) con el mínimo privilegio con el siguiente comando.
+  Podemos crear un clúster de GKE que use una subred privada y Google Service Account(GSA) con el mínimo privilegio con el siguiente comando.
 
-    ```bash
-    source cluster.sh
-    ```
+  ```bash
+  source cluster.sh
+  ```
 
-    📓NOTA : Las configuraciones anteriores crearán worker nodes que estarán en una subred privada, pero los master nodes administrados por Google seguirán teniendo acceso público a Internet, que es necesario para la herramiente kubectl y se protegerá mediante credenciales de Google Cloud. Para proteger completamente también los master nodes, consulte Creación de un clúster privado, pero tenga en cuenta que esto también requerirá configurar el acceso a los master nodes configurando Cloud VPN , Identity Aware Proxy o usando un acceso basado en identidad como Boundary o una solución alternativa con VPN o una solución de host bastión. Este tema no se tratará en este artículo.
+  📓NOTA : Las configuraciones anteriores crearán worker nodes que estarán en una subred privada, pero los master nodes administrados por Google seguirán teniendo acceso público a Internet, que es necesario para la herramiente kubectl y se protegerá mediante credenciales de Google Cloud. Para proteger completamente también los master nodes, consulte Creación de un clúster privado, pero tenga en cuenta que esto también requerirá configurar el acceso a los master nodes configurando Cloud VPN , Identity Aware Proxy o usando un acceso basado en identidad como Boundary o una solución alternativa con VPN o una solución de host bastión. Este tema no se tratará en este artículo.
 
 - Configurar el acceso del cliente de Kubernetes al clúster de GKE
 
-    Durante la creación del clúster GKE, con KUBECONFIGla configuración de la variable de entorno, la configuración debe configurarse automáticamente.
+  Durante la creación del clúster GKE, con KUBECONFIGla configuración de la variable de entorno, la configuración debe configurarse automáticamente.
 
-    Si surge un motivo por el cual necesita configurarlo o actualizarlo, puede ejecutar el siguiente comando:
+  Si surge un motivo por el cual necesita configurarlo o actualizarlo, puede ejecutar el siguiente comando:
 
-    ```bash
-    gcloud container clusters  get-credentials $GKE_CLUSTER_NAME \
-        --project $GKE_PROJECT_ID \
-        --region $GKE_REGION
-    ```
+  ```bash
+  gcloud container clusters  get-credentials $GKE_CLUSTER_NAME \
+      --project $GKE_PROJECT_ID \
+      --region $GKE_REGION
+  ```
 
-    Puede probar la funcionalidad con los siguientes comandos:
+  Puede probar la funcionalidad con los siguientes comandos:
 
-    ```bash
-    kubectl get nodes
-    kubectl get all --all-namespaces
-    ```
+  ```bash
+  kubectl get nodes
+  kubectl get all --all-namespaces
+  ```
