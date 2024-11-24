@@ -1,8 +1,8 @@
 # variable
-export DEMO="jf"
+export DEMO="my-app"
 
 # variable global 
-export GKE_PROJECT_ID="$DEMO-base-gke" 
+export GKE_PROJECT_ID="$DEMO-base-gke"
 
 # variables de red 
 export GKE_NETWORK_NAME="$DEMO-base-main" 
