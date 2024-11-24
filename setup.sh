@@ -1,7 +1,7 @@
 export PROJECT_ID=$(gcloud config get-value project)
 export PROJECT_NUMBER=$(gcloud projects describe $PROJECT_ID --format='value(projectNumber)')
-export REGION=europe-southwest1
-export ZONE=europe-southwest1-a
+export REGION=us-central1
+export ZONE=us-central1-a
 gcloud config set compute/region $REGION
 
 
