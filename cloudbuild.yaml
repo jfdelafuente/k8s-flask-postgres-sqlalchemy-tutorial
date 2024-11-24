@@ -1,10 +1,10 @@
 steps:
   - name: 'gcr.io/cloud-builders/docker'
     script: |
-      docker build -t us-central1-docker.pkg.dev/$PROJECT_ID/my-repository/hello-image:$SHORT_SHA .
+      docker build -t us-central1-docker.pkg.dev/$PROJECT_ID/my-repository/hello-app:$SHORT_SHA .
     automapSubstitutions: true
 images:
-  - 'us-central1-docker.pkg.dev/$PROJECT_ID/my-repository/hello-image:$SHORT_SHA'
+  - 'us-central1-docker.pkg.dev/$PROJECT_ID/my-repository/hello-app:$SHORT_SHA'
 options:
   logging: CLOUD_LOGGING_ONLY
 # [END cloudbuild]
