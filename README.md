@@ -112,18 +112,25 @@ Existen varias alternativas:
 
     ```bash
     steps:
+    # Docker Build
     - name: 'gcr.io/cloud-builders/docker'
-      script: |
-        docker build -t us-central1-docker.pkg.dev/$PROJECT_ID/my-repository/hello-image:$SHORT_SHA .
-      automapSubstitutions: true
+      args: ['build', '-t', 
+             'us-central1-docker.pkg.dev/${PROJECT_ID}/my-repository/myimage:${SHORT_SHA}', '.']
+
+    # Docker push to Google Artifact Registry
+    - name: 'gcr.io/cloud-builders/docker'
+      args: ['push',  'us-central1-docker.pkg.dev/${PROJECT_ID}/my-repository/myimage:${SHORT_SHA}']
+
     images:
-    - 'us-central1-docker.pkg.dev/$PROJECT_ID/my-repository/hello-image:$SHORT_SHA'
+      - us-central1-docker.pkg.dev/${PROJECT_ID}/my-repository/myimage:${SHORT_SHA}
     ```
 
     Comienza la compilación mediante la ejecución del siguiente comando:
 
     ```bash
-    gcloud builds submit --region=$REGION --config cloudbuild.yaml
+    COMMIT_ID="$(git rev-parse --short=7 HEAD)"
+    gcloud builds submit --region=$REGION --config cloudbuild.yaml \
+      --substitutions=SHORT_SHA=$COMMIT_ID .
     ```
 
     Acabas de compilar *hello-image* mediante un archivo de configuración de compilación y enviaste la imagen a Artifact Registry.
