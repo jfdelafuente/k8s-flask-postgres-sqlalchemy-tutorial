@@ -156,6 +156,12 @@ Existen varias alternativas:
 
  El aprovisionamiento de GKE se realizará en el siguiente orden:
 
+- Establecer las variables de entorno
+
+    ```bash
+    source env.sh
+    ```
+
 - Crear la cuenta de servicio de Google
 
     Debemos crear una cuenta de servicio más segura que tenga los privilegios mínimos necesarios para ejecutar un clúster de GKE.

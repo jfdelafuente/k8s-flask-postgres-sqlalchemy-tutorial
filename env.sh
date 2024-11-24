@@ -11,7 +11,8 @@ export GKE_ROUTER_NAME="$DEMO-base-router"
 export GKE_NAT_NAME="$DEMO-base-nat" 
 
 # variables principales 
-export GKE_SA_NAME="$DEMO-gke-worker-nodes-sa" 
+# export GKE_SA_NAME="$DEMO-gke-worker-nodes-sa" 
+export GKE_SA_NAME="$DEMO-gke-sa" 
 export GKE_SA_EMAIL="$GKE_SA_NAME@${GKE_PROJECT_ID}.iam.gserviceaccount.com" 
 
 # variables gke 
