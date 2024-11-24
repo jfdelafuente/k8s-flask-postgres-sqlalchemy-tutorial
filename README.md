@@ -177,5 +177,5 @@ images:
 Comienza la compilación mediante la ejecución del siguiente comando:
 
 ```bash
-gcloud builds submit --region=us-central1 --config cloudbuild.yaml
+gcloud builds submit --region=$REGION --config cloudbuild.yaml
 ```
