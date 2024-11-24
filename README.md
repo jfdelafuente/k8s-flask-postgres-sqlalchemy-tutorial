@@ -1,6 +1,6 @@
 # Kubernetes + Docker + Flask + Postgres + Sqlalchemy + Gunicorn — Deploy your flask application on Kubernetes
 
-##### This project is based on an article on <a href="https://medium.com/@mudasiryounas/kubernetes-docker-flask-postgres-sqlalchemy-gunicorn-deploy-your-flask-application-on-57431c8cbd9f" target="_blank" />Medium</a>
+*This project is based on an article on* [Medium](<https://medium.com/@mudasiryounas/kubernetes-docker-flask-postgres-sqlalchemy-gunicorn-deploy-your-flask-application-on-57431c8cbd9f>)
 
 ## Step 0) Requisitos previos
 
@@ -90,7 +90,7 @@ Existen varias alternativas:
     Ahora que la imagen de Docker está almacenada en Artifact Registry. Ejecuta la imagen de Docker que compilaste antes:
 
     ```bash
-    docker run ${REGION}-docker.pkg.dev/${PROJECT_ID}/my-repository/hello-app:v1
+    docker run -p 5001:5000 ${REGION}-docker.pkg.dev/${PROJECT_ID}/my-repository/hello-app:v1
     ```
 
 2. **Cloud Build - Compila una imagen con un Dockerfile**
@@ -108,7 +108,7 @@ Existen varias alternativas:
 
     En esta sección, usarás un archivo de configuración de Cloud Build para compilar la misma imagen de Docker que la anterior. El archivo de configuración de compilación indica a Cloud Build que realice tareas según tus especificaciones.
 
-    En el mismo directorio que contiene quickstart.sh y Dockerfile, crea un archivo llamado cloudbuild.yaml con el siguiente contenido. Este archivo es tu archivo de configuración de compilación. A la hora de la compilación, Cloud Build reemplaza de forma automática $PROJECT_ID por tu ID del proyecto.
+    En el mismo directorio que contiene el Dockerfile, crea un archivo llamado cloudbuild.yaml con el siguiente contenido. Este archivo es tu archivo de configuración de compilación. A la hora de la compilación, Cloud Build reemplaza de forma automática $PROJECT_ID por tu ID del proyecto.
 
     ```bash
     steps:
@@ -128,7 +128,22 @@ Existen varias alternativas:
 
     Acabas de compilar *hello-image* mediante un archivo de configuración de compilación y enviaste la imagen a Artifact Registry.
 
-##### Aprovisionar recurso en GCP
+4. **Cloud Build. Automatizar las compilaciones**
+
+    Invoca automaticamente compilaciones cuando envías cambios a GitHub. Resumen de pasos:
+
+    - Bifurca y clona un repositorio de GitHub de muestra
+
+      ```bash
+      git clone https://github.com/GITHUB_USERNAME/cloud-build-samples.git
+      ```
+
+    - Conecta Cloud Build a tu repositorio: En el menú de navegación de la consola de Google Cloud, haz clic en Cloud Build > Activadores.
+    - Crear un activador
+    - Confirma un cambio:  Tu envío hará que el activador genere una compilación automática.
+    - Consulta los detalles de la compilación
+
+## Implementa recurso en GCP
 
  Google Kubernetes Engine ( GKE ) es fácil de configurar y poner en marcha. Con solo un comando o unos pocos clics del mouse, puede tener un clúster completo listo para usar.
 
