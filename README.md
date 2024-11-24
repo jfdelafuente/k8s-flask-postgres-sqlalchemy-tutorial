@@ -154,6 +154,51 @@ Existen varias alternativas:
 
  Google Kubernetes Engine ( GKE ) es fácil de configurar y poner en marcha. Con solo un comando o unos pocos clics del mouse, puede tener un clúster completo listo para usar.
 
+### a) Implementacion Rápida
+
+  Creamos el cluster:
+
+  ```bash
+  gcloud container clusters create-auto hello-cloudbuild --region us-central1
+  ```
+
+  Una vez que se complete el comando, ejecuta el siguiente comando para ver los tres nodos del clúster:
+  
+```bash
+kubectl get nodes
+```
+
+Kubernetes representa las aplicaciones como Pods, que son unidades escalables que contienen uno o más contenedores. Una forma de implementar un conjunto de réplicas es mediante una implementación de Kubernetes.
+
+  ```bash
+  # Verifica que estás conectado a tu clúster de GKE
+  gcloud container clusters get-credentials hello-cloudbuild --location us-central1
+```
+
+ejecute el siguiente comando para imprimir el contexto activo:
+
+```bash
+kubectl config current-context
+```
+
+Crea una implementación de Kubernetes:
+
+```bash
+kubectl create deployment hello-app --image=us-central1-docker.pkg.dev/my-hello-app-442712/my-repository/hello-cloudbuild:b369946
+# Verifica los Pods creados de la siguiente manera
+kubectl get pods
+```
+
+Para exponer un servicio de Kubernetes fuera del clúster, debes crear un servicio de tipo LoadBalancer. Este tipo de servicio genera una IP del balanceador de cargas externo para un conjunto dinámico de Pods, a la que se puede acceder a través de Internet.
+
+```bash
+kubectl expose deployment hello-app --name=hello-app-service --type=LoadBalancer --port 80 --target-port 5000
+# Vemos los detalles del servicio
+kubectl get service
+```
+
+### b) Implementacion Baseline
+
  El aprovisionamiento de GKE se realizará en el siguiente orden:
 
 - Establecer las variables de entorno
