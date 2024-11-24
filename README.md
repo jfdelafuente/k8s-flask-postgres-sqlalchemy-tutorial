@@ -2,35 +2,112 @@
 
 ## This project is based on an article on <a href="https://medium.com/@mudasiryounas/kubernetes-docker-flask-postgres-sqlalchemy-gunicorn-deploy-your-flask-application-on-57431c8cbd9f" target="_blank" />Medium</a>
 
-## Creamos la imagen docker
+## Step 1) Creamos la imagen docker
 
-### Step 1) Build our flask image
+### Step 1.1) Build our flask image
 
-Let’s start with building our docker image for our flask application.
+  Let’s start with building our docker image for our flask application.
 
-```bash
-docker build -t flask-image .
-```
+  ```bash
+  docker build -t flask-image .
+  ```
 
-```bash
-docker images
-```
+  ```bash
+  docker images
+  ```
 
-### Step 2) Test flak image by running on localhost
+### Step 1.2) Test flak image by running on localhost
 
-Since our image is ready, we can now run our image to check if everything is working fine.
+  Since our image is ready, we can now run our image to check if everything is working fine.
 
-Run the following command
+  Run the following command
 
-```bash
-docker run -p 5001:5000 flask-image
-```
+  ```bash
+  docker run -p 5001:5000 flask-image
+  ```
 
-Here -p 5001:5000 is mapping 5001 port from localhost to 5000 port inside flask container, since flask container is running at 5000 port as we mention in our entrypoint.sh file.
+  Here -p 5001:5000 is mapping 5001 port from localhost to 5000 port inside flask container, since flask container is running at 5000 port as we mention in our entrypoint.sh file.
 
-Here you can see our Gunicorn is running on port 5000 inside the container, and we are mapped 5001 port to 5000 inside the container, So if now we open any browser and navigate to 0.0.0.0:5001/test we will be able to see our application is working.
+  Here you can see our Gunicorn is running on port 5000 inside the container, and we are mapped 5001 port to 5000 inside the container, So if now we open any browser and navigate to 0.0.0.0:5001/test we will be able to see our application is working.
 
-### Step 3) Push flask image to container registry of Google Cloud Platform
+## Step 2) Push flask image to container registry of Google Cloud Platform
+
+### Step 2.1) Crear un Repositorio
+
+  Crear un repositorio en Google Artifact Registry para almacenar las imagenes de los contenedores
+
+  ```bash
+  gcloud artifacts repositories create my-repository \
+    --repository-format=docker \
+    --location=$GKE_REGION
+
+  gcloud services enable artifactregistry.googleapis.com
+  ```
+
+### Step 2.2) Push flask image to GCP
+
+Existen varias alternativas:
+
+1. **Push flask image to GCP de form manual**
+
+    Compila y etiqueta la imagen de Docker para hello-app:
+
+    ```bash
+    docker build -t ${GKE_REGION}-docker.pkg.dev/${GKE_PROJECT_ID}/my-repository/hello-app:v1 .
+    ```
+
+    Asegúrate de que la API de Artifact Registry esté habilitada para el proyecto de Google Cloud en el que estás trabajando:
+
+    ```bash
+    gcloud services enable artifactregistry.googleapis.com
+    ```
+
+    Configura la herramienta de línea de comandos de Docker para que se autentique en Artifact Registry:
+
+    ```bash
+    gcloud auth configure-docker ${GKE_REGION}-docker.pkg.dev
+    ```
+
+    Envía la imagen de Docker que acabas de compilar al repositorio:
+
+    ```bash
+    docker push ${GKE_REGION}-docker.pkg.dev/${GKE_PROJECT_ID}/my-repository/hello-app:v1
+    ```
+
+    Ahora que la imagen de Docker está almacenada en Artifact Registry
+
+2. **Cloud Build - Compila una imagen con un Dockerfile**
+
+    Cloud Build te permite compilar una imagen de Docker mediante un Dockerfile. No se necesita un archivo de configuración de Cloud Build diferente.
+
+    ```bash
+    COMMIT_ID="$(git rev-parse --short=7 HEAD)"
+    gcloud builds submit --tag="${GKE_REGION}-docker.pkg.dev/${GKE_PROJECT_ID}/my-repository/hello-cloudbuild:${COMMIT_ID}" .
+    ```
+
+    Acabas de compilar una imagen de Docker llamada hello-cloudbuild mediante un Dockerfile y enviaste la imagen a Artifact Registry.
+
+3. **Cloud Build - Compila una imagen mediante un archivo de configuración de compilación**
+
+    En esta sección, usarás un archivo de configuración de Cloud Build para compilar la misma imagen de Docker que la anterior. El archivo de configuración de compilación indica a Cloud Build que realice tareas según tus especificaciones.
+
+    En el mismo directorio que contiene quickstart.sh y Dockerfile, crea un archivo llamado cloudbuild.yaml con el siguiente contenido. Este archivo es tu archivo de configuración de compilación. A la hora de la compilación, Cloud Build reemplaza de forma automática $PROJECT_ID por tu ID del proyecto.
+
+    ```bash
+    steps:
+    - name: 'gcr.io/cloud-builders/docker'
+      script: |
+        docker build -t us-west2-docker.pkg.dev/$PROJECT_ID/quickstart-docker-repo/quickstart-image:$SHORT_SHA .
+      automapSubstitutions: true
+    images:
+    - 'us-central1-docker.pkg.dev/$PROJECT_ID/my-repository/app-image:$SHORT_SHA'
+    ```
+
+    Comienza la compilación mediante la ejecución del siguiente comando:
+
+    ```bash
+    gcloud builds submit --region=$REGION --config cloudbuild.yaml
+    ```
 
 #### Requisitos previos
 
@@ -106,76 +183,3 @@ Here you can see our Gunicorn is running on port 5000 inside the container, and 
     kubectl get nodes
     kubectl get all --all-namespaces
     ```
-
-### Step 4) Crear un Repositorio
-
-Crear un repositorio en Google Artifact Registry para almacenar las imagenes de los contenedores
-
-```bash
-gcloud artifacts repositories create my-repository \
-  --repository-format=docker \
-  --location=$GKE_REGION
-
-gcloud services enable artifactregistry.googleapis.com
-```
-
-#### Step 4.1) Push flask image to GCP de form manual
-
-Compila y etiqueta la imagen de Docker para hello-app:
-
-```bash
-docker build -t ${GKE_REGION}-docker.pkg.dev/${GKE_PROJECT_ID}/my-repository/hello-app:v1 .
-```
-
-Asegúrate de que la API de Artifact Registry esté habilitada para el proyecto de Google Cloud en el que estás trabajando:
-
-```bash
-gcloud services enable artifactregistry.googleapis.com
-```
-
-Configura la herramienta de línea de comandos de Docker para que se autentique en Artifact Registry:
-
-```bash
-gcloud auth configure-docker ${GKE_REGION}-docker.pkg.dev
-```
-
-Envía la imagen de Docker que acabas de compilar al repositorio:
-
-```bash
-docker push ${GKE_REGION}-docker.pkg.dev/${GKE_PROJECT_ID}/my-repository/hello-app:v1
-```
-
-Ahora que la imagen de Docker está almacenada en Artifact Registry
-
-#### Step 4.2) Cloud Build - Compila una imagen con un Dockerfile 
-
-Cloud Build te permite compilar una imagen de Docker mediante un Dockerfile. No se necesita un archivo de configuración de Cloud Build diferente.
-
-```bash
-COMMIT_ID="$(git rev-parse --short=7 HEAD)"
-gcloud builds submit --tag="${GKE_REGION}-docker.pkg.dev/${GKE_PROJECT_ID}/my-repository/hello-cloudbuild:${COMMIT_ID}" .
-```
-
-Acabas de compilar una imagen de Docker llamada hello-cloudbuild mediante un Dockerfile y enviaste la imagen a Artifact Registry.
-
-#### Step 4.3) Cloud Build - Compila una imagen mediante un archivo de configuración de compilación
-
-En esta sección, usarás un archivo de configuración de Cloud Build para compilar la misma imagen de Docker que la anterior. El archivo de configuración de compilación indica a Cloud Build que realice tareas según tus especificaciones.
-
-En el mismo directorio que contiene quickstart.sh y Dockerfile, crea un archivo llamado cloudbuild.yaml con el siguiente contenido. Este archivo es tu archivo de configuración de compilación. A la hora de la compilación, Cloud Build reemplaza de forma automática $PROJECT_ID por tu ID del proyecto.
-
-```bash
-steps:
-- name: 'gcr.io/cloud-builders/docker'
-  script: |
-    docker build -t us-west2-docker.pkg.dev/$PROJECT_ID/quickstart-docker-repo/quickstart-image:$SHORT_SHA .
-  automapSubstitutions: true
-images:
-- 'us-central1-docker.pkg.dev/$PROJECT_ID/my-repository/app-image:$SHORT_SHA'
-```
-
-Comienza la compilación mediante la ejecución del siguiente comando:
-
-```bash
-gcloud builds submit --region=$REGION --config cloudbuild.yaml
-```
