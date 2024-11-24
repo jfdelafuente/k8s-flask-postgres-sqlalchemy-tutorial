@@ -17,7 +17,7 @@ spec:
     spec:
       containers:
       - name: "flask"
-        image: "gcr.io/<project-id>/flask-image"
+        image: "us-central1-docker.pkg.dev/${PROJECT_ID}/my-repository/myimage:c10bd6b"
 
 
 ---
