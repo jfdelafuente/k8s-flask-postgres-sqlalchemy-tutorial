@@ -17,7 +17,7 @@ spec:
     spec:
       containers:
       - name: "flask"
-        image: "us-central1-docker.pkg.dev/${PROJECT_ID}/my-repository/myimage:c10bd6b"
+        image: "us-central1-docker.pkg.dev/my-hello-app-442712/my-repository/myimage:c10bd6b"
 
 
 ---
