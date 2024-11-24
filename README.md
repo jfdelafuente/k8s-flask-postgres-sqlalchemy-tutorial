@@ -1,6 +1,14 @@
 # Kubernetes + Docker + Flask + Postgres + Sqlalchemy + Gunicorn — Deploy your flask application on Kubernetes
 
-## This project is based on an article on <a href="https://medium.com/@mudasiryounas/kubernetes-docker-flask-postgres-sqlalchemy-gunicorn-deploy-your-flask-application-on-57431c8cbd9f" target="_blank" />Medium</a>
+##### This project is based on an article on <a href="https://medium.com/@mudasiryounas/kubernetes-docker-flask-postgres-sqlalchemy-gunicorn-deploy-your-flask-application-on-57431c8cbd9f" target="_blank" />Medium</a>
+
+## Step 0) Requisitos previos
+
+Crea un proyecto nuevo para asegurarte de tener los permisos que necesitas o selecciona un proyecto existente en el que tengas los permisos relevantes.
+
+```bash
+    source setup.sh
+```
 
 ## Step 1) Creamos la imagen docker
 
@@ -32,16 +40,21 @@
 
 ## Step 2) Push flask image to container registry of Google Cloud Platform
 
-### Step 2.1) Crear un Repositorio
+### Step 2.1) Crea un repositorio de Docker en Artifact Registry
 
   Crear un repositorio en Google Artifact Registry para almacenar las imagenes de los contenedores
 
   ```bash
+  # Habilitamos las APIs obligatorias
+  gcloud services enable artifactregistry.googleapis.com
+
+  # Creamos el repositorio
   gcloud artifacts repositories create my-repository \
     --repository-format=docker \
-    --location=$GKE_REGION
+    --location=$REGION
 
-  gcloud services enable artifactregistry.googleapis.com
+  # Verificamos que se ha creado el repositorio
+  gcloud artifacts repositories list
   ```
 
 ### Step 2.2) Push flask image to GCP
@@ -53,7 +66,7 @@ Existen varias alternativas:
     Compila y etiqueta la imagen de Docker para hello-app:
 
     ```bash
-    docker build -t ${GKE_REGION}-docker.pkg.dev/${GKE_PROJECT_ID}/my-repository/hello-app:v1 .
+    docker build -t ${REGION}-docker.pkg.dev/${PROJECT_ID}/my-repository/hello-app:v1 .
     ```
 
     Asegúrate de que la API de Artifact Registry esté habilitada para el proyecto de Google Cloud en el que estás trabajando:
@@ -65,16 +78,20 @@ Existen varias alternativas:
     Configura la herramienta de línea de comandos de Docker para que se autentique en Artifact Registry:
 
     ```bash
-    gcloud auth configure-docker ${GKE_REGION}-docker.pkg.dev
+    gcloud auth configure-docker ${REGION}-docker.pkg.dev
     ```
 
     Envía la imagen de Docker que acabas de compilar al repositorio:
 
     ```bash
-    docker push ${GKE_REGION}-docker.pkg.dev/${GKE_PROJECT_ID}/my-repository/hello-app:v1
+    docker push ${REGION}-docker.pkg.dev/${PROJECT_ID}/my-repository/hello-app:v1
     ```
 
-    Ahora que la imagen de Docker está almacenada en Artifact Registry
+    Ahora que la imagen de Docker está almacenada en Artifact Registry. Ejecuta la imagen de Docker que compilaste antes:
+
+    ```bash
+    docker run ${REGION}-docker.pkg.dev/${PROJECT_ID}/my-repository/hello-app:v1
+    ```
 
 2. **Cloud Build - Compila una imagen con un Dockerfile**
 
@@ -82,7 +99,7 @@ Existen varias alternativas:
 
     ```bash
     COMMIT_ID="$(git rev-parse --short=7 HEAD)"
-    gcloud builds submit --tag="${GKE_REGION}-docker.pkg.dev/${GKE_PROJECT_ID}/my-repository/hello-cloudbuild:${COMMIT_ID}" .
+    gcloud builds submit --tag="${REGION}-docker.pkg.dev/${PROJECT_ID}/my-repository/hello-cloudbuild:${COMMIT_ID}" .
     ```
 
     Acabas de compilar una imagen de Docker llamada hello-cloudbuild mediante un Dockerfile y enviaste la imagen a Artifact Registry.
@@ -97,10 +114,10 @@ Existen varias alternativas:
     steps:
     - name: 'gcr.io/cloud-builders/docker'
       script: |
-        docker build -t us-west2-docker.pkg.dev/$PROJECT_ID/quickstart-docker-repo/quickstart-image:$SHORT_SHA .
+        docker build -t us-central1-docker.pkg.dev/$PROJECT_ID/my-repository/hello-image:$SHORT_SHA .
       automapSubstitutions: true
     images:
-    - 'us-central1-docker.pkg.dev/$PROJECT_ID/my-repository/app-image:$SHORT_SHA'
+    - 'us-central1-docker.pkg.dev/$PROJECT_ID/my-repository/hello-image:$SHORT_SHA'
     ```
 
     Comienza la compilación mediante la ejecución del siguiente comando:
@@ -109,27 +126,11 @@ Existen varias alternativas:
     gcloud builds submit --region=$REGION --config cloudbuild.yaml
     ```
 
-#### Requisitos previos
-
- Google Kubernetes Engine ( GKE ) es fácil de configurar y poner en marcha. Con solo un comando o unos pocos clics del mouse, puede tener un clúster completo listo para usar.
-
-##### Configurar variables de entorno
-
- Puede guardar el contenido a continuación env.shy obtenerlo según sea necesario.
-
-```bash
- source env.sh
-```
-
-##### Creacción de proyecto
-
- puede ejecutar los siguientes comandos a continuación para crear un proyecto y autorizar el proyecto para permitir la creación de un clúster de GKE .
-
-```bash
-    source project.sh
-```
+    Acabas de compilar *hello-image* mediante un archivo de configuración de compilación y enviaste la imagen a Artifact Registry.
 
 ##### Aprovisionar recurso en GCP
+
+ Google Kubernetes Engine ( GKE ) es fácil de configurar y poner en marcha. Con solo un comando o unos pocos clics del mouse, puede tener un clúster completo listo para usar.
 
  El aprovisionamiento de GKE se realizará en el siguiente orden:
 
