@@ -17,9 +17,17 @@ Download the code from the GitHub repository (using GIT)
 
 We need to create image for the app for that we need to write set of instruction in Dockerfile
 
-In this file we used one python:3.9-slim as a base image, for connect to mysql via mysql connectot, we need to install the package default-libmysqlclient-dev .
+En el *Dockerfile* estamos usando python:3.6-alpine, esta imagen base no incluye las bibliotecas que requiere Sqlalchemy para interactuar con Postgres por lo que tenemos que instalarlar sus dependencias.
 
-Incluir en requirements.txt la siguiente librería:
+```bash
+RUN \
+ apk add --no-cache bash && \
+ apk add --no-cache postgresql-libs && \
+ apk add --no-cache --virtual .build-deps gcc musl-dev postgresql-dev
+RUN pip install -r requirements.txt
+```
+
+Incluir en *requirements.txt* la siguiente librería:
 psycopg2-binary : Otra herramienta que puede resultarle útil es psycopg2-binary, un adaptador PostgreSQL para Python. Le permite interactuar con bases de datos PostgreSQL utilizando código Python, lo que puede ahorrarle mucho tiempo y facilitar su proceso de desarrollo.
 
 ### Step 1.1) Build our flask image
