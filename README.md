@@ -2,15 +2,25 @@
 
 *This project is based on an article on* [Medium](<https://medium.com/@mudasiryounas/kubernetes-docker-flask-postgres-sqlalchemy-gunicorn-deploy-your-flask-application-on-57431c8cbd9f>)
 
+## Introducción
+
 ## Step 0) Requisitos previos
 
-Crea un proyecto nuevo para asegurarte de tener los permisos que necesitas o selecciona un proyecto existente en el que tengas los permisos relevantes.
+Download the code from the GitHub repository (using GIT)
 
 ```bash
-    source setup.sh
+    git clone https://github.com/jfdelafuente/k8s-flask-postgres-sqlalchemy-tutorial.git
+    cd <YOUR_BUILD_ID> 
 ```
 
 ## Step 1) Creamos la imagen docker
+
+We need to create image for the app for that we need to write set of instruction in Dockerfile
+
+In this file we used one python:3.9-slim as a base image, for connect to mysql via mysql connectot, we need to install the package default-libmysqlclient-dev .
+
+Incluir en requirements.txt la siguiente librería:
+psycopg2-binary : Otra herramienta que puede resultarle útil es psycopg2-binary, un adaptador PostgreSQL para Python. Le permite interactuar con bases de datos PostgreSQL utilizando código Python, lo que puede ahorrarle mucho tiempo y facilitar su proceso de desarrollo.
 
 ### Step 1.1) Build our flask image
 
@@ -39,6 +49,14 @@ Crea un proyecto nuevo para asegurarte de tener los permisos que necesitas o sel
   Here you can see our Gunicorn is running on port 5000 inside the container, and we are mapped 5001 port to 5000 inside the container, So if now we open any browser and navigate to 0.0.0.0:5001/test we will be able to see our application is working.
 
 ## Step 2) Push flask image to container registry of Google Cloud Platform
+
+## Step 2.0) Requisitos previos
+
+Crea un proyecto nuevo para asegurarte de tener los permisos que necesitas o selecciona un proyecto existente en el que tengas los permisos relevantes.
+
+```bash
+    source setup.sh
+```
 
 ### Step 2.1) Crea un repositorio de Docker en Artifact Registry
 
